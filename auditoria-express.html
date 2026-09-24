@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auditoria Express - Balance Express</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0f1419 0%, #1a1f2e 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 620px;
+            background: linear-gradient(135deg, #1a1f2e 0%, #232d3d 100%);
+            border-radius: 16px;
+            padding: 48px;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+            min-height: 600px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border: 1px solid rgba(50, 205, 50, 0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .logo {
+            font-size: 32px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #32CD32 0%, #2ab01f 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 12px;
+            letter-spacing: -2px;
+            text-transform: uppercase;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: #a0aec0;
+            margin-bottom: 20px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(45, 55, 72, 0.8);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 30px;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #32CD32 0%, #2ab01f 100%);
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 15px rgba(50, 205, 50, 0.5);
+        }
+
+        .content {
+            flex: 1;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 28px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: #e0e7ff;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 14px 18px;
+            background: rgba(45, 55, 72, 0.6);
+            border: 2px solid rgba(50, 205, 50, 0.2);
+            border-radius: 10px;
+            color: #ffffff;
+            font-size: 15px;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #32CD32;
+            background: rgba(45, 55, 72, 0.9);
+            box-shadow: 0 0 20px rgba(50, 205, 50, 0.3);
+        }
+
+        .question {
+            font-size: 17px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            line-height: 1.6;
+            color: #e0e7ff;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .option-btn {
+            padding: 16px 20px;
+            background: linear-gradient(135deg, rgba(45, 55, 72, 0.7) 0%, rgba(58, 69, 86, 0.7) 100%);
+            border: 2px solid rgba(50, 205, 50, 0.2);
+            border-radius: 10px;
+            color: #e0e7ff;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-align: left;
+            font-weight: 600;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .option-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(50, 205, 50, 0.1);
+            transition: left 0.3s;
+        }
+
+        .option-btn:hover {
+            border-color: #32CD32;
+            background: linear-gradient(135deg, rgba(45, 55, 72, 1) 0%, rgba(58, 69, 86, 1) 100%);
+            box-shadow: 0 8px 20px rgba(50, 205, 50, 0.2);
+            color: #32CD32;
+        }
+
+        .option-btn:hover::before {
+            left: 100%;
+        }
+
+        .option-btn.selected {
+            background: linear-gradient(135deg, #32CD32 0%, #2ab01f 100%);
+            border-color: #32CD32;
+            color: #ffffff;
+            font-weight: 700;
+            box-shadow: 0 12px 30px rgba(50, 205, 50, 0.4);
+        }
+
+        .buttons-group {
+            display: flex;
+            gap: 14px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 16px 32px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 150px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #32CD32 0%, #2ab01f 100%);
+            color: #ffffff;
+            box-shadow: 0 8px 20px rgba(50, 205, 50, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #3de535 0%, #22a016 100%);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(50, 205, 50, 0.5);
+        }
+
+        .btn-secondary {
+            background: rgba(45, 55, 72, 0.8);
+            color: #e0e7ff;
+            border: 2px solid rgba(50, 205, 50, 0.3);
+        }
+
+        .btn-secondary:hover {
+            border-color: #32CD32;
+            color: #32CD32;
+            background: rgba(45, 55, 72, 1);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(50, 205, 50, 0.2);
+        }
+
+        .score-section {
+            text-align: center;
+            margin-bottom: 32px;
+            padding: 40px;
+            background: linear-gradient(135deg, rgba(45, 55, 72, 0.8) 0%, rgba(58, 69, 86, 0.8) 100%);
+            border-radius: 14px;
+            border-left: 6px solid #32CD32;
+            box-shadow: 0 12px 40px rgba(50, 205, 50, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .score-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(50, 205, 50, 0.08) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .score-number {
+            font-size: 56px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #32CD32 0%, #2ab01f 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 12px;
+        }
+
+        .score-label {
+            font-size: 15px;
+            color: #a0aec0;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .score-bar {
+            width: 100%;
+            height: 12px;
+            background: rgba(26, 31, 42, 0.6);
+            border-radius: 6px;
+            overflow: hidden;
+            margin-top: 20px;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .score-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #32CD32 0%, #2ab01f 100%);
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 20px rgba(50, 205, 50, 0.6);
+        }
+
+        .mundo-card {
+            background: linear-gradient(135deg, rgba(45, 55, 72, 0.7) 0%, rgba(58, 69, 86, 0.7) 100%);
+            border-left: 5px solid #32CD32;
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(50, 205, 50, 0.1);
+        }
+
+        .mundo-card:hover {
+            transform: translateX(6px);
+            box-shadow: 0 12px 32px rgba(50, 205, 50, 0.25);
+            background: linear-gradient(135deg, rgba(45, 55, 72, 0.9) 0%, rgba(58, 69, 86, 0.9) 100%);
+        }
+
+        .mundo-title {
+            font-size: 14px;
+            font-weight: 800;
+            color: #32CD32;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .mundo-percentage {
+            font-size: 20px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #32CD32 0%, #2ab01f 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .mundo-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(26, 31, 42, 0.6);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 12px;
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        .mundo-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #32CD32 0%, #2ab01f 100%);
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .mundo-text {
+            font-size: 13px;
+            color: #cbd5e0;
+            line-height: 1.6;
+        }
+
+        .cta-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-top: 40px;
+            padding: 32px 0;
+        }
+
+        .cta-button {
+            padding: 28px 20px;
+            background: linear-gradient(135deg, rgba(45, 55, 72, 0.8) 0%, rgba(58, 69, 86, 0.8) 100%);
+            border: 2px solid rgba(50, 205, 50, 0.2);
+            border-radius: 12px;
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            text-align: center;
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 110px;
+            gap: 12px;
+            letter-spacing: 0.6px;
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        .cta-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: left 0.6s;
+        }
+
+        .cta-button:hover::before {
+            left: 100%;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .cta-button.btn-calculadora {
+            background: linear-gradient(135deg, #32CD32 0%, #2ab01f 100%);
+            color: #ffffff;
+            border-color: #32CD32;
+        }
+
+        .cta-button.btn-calculadora:hover {
+            background: linear-gradient(135deg, #3de535 0%, #22a016 100%);
+            box-shadow: 0 16px 45px rgba(50, 205, 50, 0.5);
+            border-color: #3de535;
+        }
+
+        .cta-button.btn-instagram {
+            background: linear-gradient(135deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+            color: #ffffff;
+            border-color: #f09433;
+        }
+
+        .cta-button.btn-instagram:hover {
+            box-shadow: 0 16px 45px rgba(240, 148, 51, 0.5);
+            filter: brightness(1.1);
+        }
+
+        .cta-button.btn-whatsapp {
+            background: linear-gradient(135deg, #25D366 0%, #1da851 100%);
+            color: #ffffff;
+            border-color: #25D366;
+        }
+
+        .cta-button.btn-whatsapp:hover {
+            background: linear-gradient(135deg, #34db7b 0%, #1a9143 100%);
+            box-shadow: 0 16px 45px rgba(37, 211, 102, 0.5);
+            border-color: #34db7b;
+        }
+
+        .cta-button.btn-pdf {
+            background: linear-gradient(135deg, #32CD32 0%, #2ab01f 100%);
+            color: #ffffff;
+            grid-column: 1 / -1;
+            font-size: 15px;
+            min-height: 60px;
+            border-color: #32CD32;
+        }
+
+        .cta-button.btn-pdf:hover {
+            background: linear-gradient(135deg, #3de535 0%, #22a016 100%);
+            box-shadow: 0 16px 45px rgba(50, 205, 50, 0.5);
+            border-color: #3de535;
+        }
+
+        .cta-button-icon {
+            font-size: 28px;
+            font-weight: 800;
+            opacity: 0.95;
+        }
+
+        .cta-button-label {
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+        }
+
+        .insight-box {
+            background: linear-gradient(135deg, rgba(45, 55, 72, 0.8) 0%, rgba(58, 69, 86, 0.8) 100%);
+            border-left: 5px solid #32CD32;
+            padding: 28px;
+            border-radius: 12px;
+            margin: 32px 0;
+            font-size: 15px;
+            line-height: 1.8;
+            color: #e0e7ff;
+            box-shadow: 0 8px 24px rgba(50, 205, 50, 0.1);
+            border: 1px solid rgba(50, 205, 50, 0.1);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .footer {
+            text-align: center;
+            font-size: 12px;
+            color: #718096;
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px solid rgba(50, 205, 50, 0.1);
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 28px;
+                min-height: auto;
+                border-radius: 12px;
+            }
+
+            .btn, .cta-button {
+                min-width: 120px;
+                padding: 12px 20px;
+                font-size: 13px;
+            }
+
+            .score-number {
+                font-size: 42px;
+            }
+
+            .logo {
+                font-size: 24px;
+            }
+
+            .cta-buttons {
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- PANTALLA 1: DATOS BASICOS -->
+        <div id="screen-1" class="content">
+            <div class="header">
+                <div class="logo">Auditoria Express</div>
+                <div class="subtitle">Salud Financiera de tu Negocio</div>
+            </div>
+
+            <div class="form-group">
+                <label>Tu nombre:</label>
+                <input type="text" id="dueño" placeholder="Ej: Juan García" />
+            </div>
+
+            <div class="form-group">
+                <label>Nombre del negocio:</label>
+                <input type="text" id="negocio" placeholder="Ej: La Ferretería Central" />
+            </div>
+
+            <div class="form-group">
+                <label>Rubro:</label>
+                <select id="rubro">
+                    <option value="">Selecciona un rubro</option>
+                    <option value="Almacen">Almacen</option>
+                    <option value="Farmacia">Farmacia</option>
+                    <option value="Restaurante">Restaurante</option>
+                    <option value="Verduleria">Verduleria</option>
+                    <option value="Peluqueria">Peluqueria</option>
+                    <option value="Taller">Taller</option>
+                    <option value="Otro">Otro</option>
+                </select>
+            </div>
+
+            <div class="buttons-group">
+                <button class="btn btn-primary" onclick="nextScreen()">Empezar Auditoria</button>
+            </div>
+        </div>
+
+        <!-- PREGUNTAS 1-13 -->
+        <div id="screen-preguntas" class="hidden">
+            <div class="header">
+                <div class="logo">Auditoria Express</div>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progreso" style="width: 0%"></div>
+            </div>
+            <div class="content">
+                <div class="question" id="pregunta-texto"></div>
+                <div class="options" id="opciones"></div>
+            </div>
+            <div class="buttons-group">
+                <button class="btn btn-secondary" id="btn-anterior" onclick="preguntaAnterior()">Anterior</button>
+                <button class="btn btn-secondary" id="btn-siguiente" onclick="siguientePregunta()">Siguiente</button>
+            </div>
+        </div>
+
+        <!-- PANTALLA FACTURACION -->
+        <div id="screen-facturacion" class="hidden">
+            <div class="header">
+                <div class="logo">Auditoria Express</div>
+            </div>
+
+            <div class="content">
+                <div class="form-group">
+                    <label>¿Cual es tu facturacion mensual aproximada?</label>
+                    <div class="options" style="gap: 12px;">
+                        <button class="option-btn" onclick="setFacturacion('Menos de $3M', 'menos-3m')">Menos de $3 millones</button>
+                        <button class="option-btn" onclick="setFacturacion('Entre $3M y $10M', '3m-10m')">Entre $3M y $10M</button>
+                        <button class="option-btn" onclick="setFacturacion('Entre $10M y $20M', '10m-20m')">Entre $10M y $20M</button>
+                        <button class="option-btn" onclick="setFacturacion('Mas de $20M', '20m+')">Mas de $20M</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="buttons-group">
+                <button class="btn btn-secondary" onclick="preguntaAnterior()">Anterior</button>
+                <button class="btn btn-primary" onclick="verResultados()">Ver Mi Auditoria</button>
+            </div>
+        </div>
+
+        <!-- PANTALLA RESULTADOS -->
+        <div id="screen-resultados" class="hidden">
+            <div class="header">
+                <div class="logo">Auditoria Express</div>
+                <div class="subtitle" id="subtitulo-resultado"></div>
+            </div>
+
+            <div class="content" style="overflow-y: auto; max-height: 500px; padding-right: 10px;">
+                <div class="score-section">
+                    <div class="score-number" id="score-total">0</div>
+                    <div class="score-label" id="score-estado">Cargando...</div>
+                    <div class="score-bar">
+                        <div class="score-fill" id="score-total-bar" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div id="facturacion-insight" style="background: linear-gradient(135deg, rgba(45, 55, 72, 0.8) 0%, rgba(58, 69, 86, 0.8) 100%); border-left: 5px solid #32CD32; padding: 24px; border-radius: 12px; margin-bottom: 24px; font-size: 14px; color: #cbd5e0; line-height: 1.7; box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2); border: 1px solid rgba(50, 205, 50, 0.1);"></div>
+
+                <div id="mundos-resumen"></div>
+
+                <div class="insight-box" id="insight-final"></div>
+            </div>
+
+            <div class="cta-buttons">
+                <a href="#" class="cta-button btn-calculadora" onclick="abrirCalculadora(event)">
+                    <div class="cta-button-icon">∑</div>
+                    <div class="cta-button-label">Calculadora</div>
+                </a>
+                <a href="https://instagram.com/miguel.lladon.ok" target="_blank" class="cta-button btn-instagram">
+                    <div class="cta-button-icon">@</div>
+                    <div class="cta-button-label">Instagram</div>
+                </a>
+                <a href="https://wa.me/3855159169" target="_blank" class="cta-button btn-whatsapp">
+                    <div class="cta-button-icon">💬</div>
+                    <div class="cta-button-label">WhatsApp</div>
+                </a>
+                <button class="cta-button btn-pdf" onclick="descargarPDF()">
+                    <div class="cta-button-label">↓ Descargar Informe PDF</div>
+                </button>
+            </div>
+
+            <div class="footer">
+                Miguel Lladon | Consultor de Finanzas para Negocios
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DATOS DEL USUARIO
+        let usuario = {
+            dueño: '',
+            negocio: '',
+            rubro: '',
+            facturacion: '',
+            facturacionKey: '',
+            respuestas: {}
+        };
+
+        const preguntas = [
+            {
+                num: 1,
+                mundo: 1,
+                texto: "¿Sabes que cuando pones precio, el margen real no es el mismo % que el markup?\n\nPor ejemplo: 50% markup = 33% margen real.\n\n¿Conoces esta diferencia a la hora de poner precios?",
+                opciones: [
+                    { texto: "Si", puntos: 4 },
+                    { texto: "No", puntos: 0 }
+                ]
+            },
+            {
+                num: 2,
+                mundo: 1,
+                texto: "¿Haces cada mes un calculo de: Ventas - Costos - Gastos = Ganancia?",
+                opciones: [
+                    { texto: "Si", puntos: 4 },
+                    { texto: "No", puntos: 0 }
+                ]
+            },
+            {
+                num: 3,
+                mundo: 1,
+                texto: "¿Sabes cuanto necesitas vender minimo para cubrir todos tus gastos y no perder?",
+                opciones: [
+                    { texto: "Si", puntos: 4 },
+                    { texto: "No", puntos: 0 }
+                ]
+            },
+            {
+                num: 4,
+                mundo: 1,
+                texto: "¿Si trabajas en tu negocio, te pagas un sueldo fijo cada mes?",
+                opciones: [
+                    { texto: "Si", puntos: 4 },
+                    { texto: "No / No aplica", puntos: 0 }
+                ]
+            },
+            {
+                num: 5,
+                mundo: 2,
+                texto: "¿Tienes un registro de cuanto dinero sacas del negocio cada mes para gastos personales?",
+                opciones: [
+                    { texto: "Si", puntos: 4 },
+                    { texto: "No", puntos: 0 }
+                ]
+            },
+            {
+                num: 6,
+                mundo: 2,
+                texto: "¿Tienes separadas la cuenta del negocio y la cuenta personal?",
+                opciones: [
+                    { texto: "Si", puntos: 4 },
+                    { texto: "No", puntos: 0 }
+                ]
+            },
+            {
+                num: 7,
+                mundo: 2,
+                texto: "De lo que gana el negocio, ¿sacas maximo 50% para ti?",
+                opciones: [
+                    { texto: "Si", puntos: 4 },
+                    { texto: "No", puntos: 0 }
+                ]
+            },
+            {
+                num: 8,
+                mundo: 3,
+                texto: "¿Haces inventario al menos 1 vez al mes?",
+                opciones: [
+                    { texto: "Si", puntos: 4 },
+                    { texto: "No", puntos: 0 }
+                ]
+            },
+            {
+                num: 9,
+                mundo: 3,
+                texto: "¿Sabes cuanto dinero tienes inmovilizado en productos que no se venden?",
+                opciones: [
+                    { texto: "Si", puntos: 4 },
+                    { texto: "No", puntos: 0 }
+                ]
+            },
+            {
+                num: 10,
+                mundo: 3,
+                texto: "¿Llevas el control de stock con software o Excel (no manual)?",
+                opciones: [
+                    { texto: "Si", puntos: 4 },
+                    { texto: "No", puntos: 0 }
+                ]
+            },
+            {
+                num: 11,
+                mundo: 4,
+                texto: "¿Sabes exactamente cuanto dinero debes a proveedores cada mes?",
+                opciones: [
+                    { texto: "Si", puntos: 4 },
+                    { texto: "No", puntos: 0 }
+                ]
+            },
+            {
+                num: 12,
+                mundo: 4,
+                texto: "¿Sabes cuanto dinero te deben tus clientes y en cuantos dias pagan?",
+                opciones: [
+                    { texto: "Si", puntos: 4 },
+                    { texto: "No", puntos: 0 }
+                ]
+            },
+            {
+                num: 13,
+                mundo: 4,
+                texto: "¿Sabes cuantos meses de ganancia necesitas para pagar todas tus deudas?",
+                opciones: [
+                    { texto: "Si", puntos: 4 },
+                    { texto: "No", puntos: 0 }
+                ]
+            }
+        ];
+
+        let preguntaActual = 0;
+
+        function nextScreen() {
+            usuario.dueño = document.getElementById('dueño').value.trim();
+            usuario.negocio = document.getElementById('negocio').value.trim();
+            usuario.rubro = document.getElementById('rubro').value;
+
+            if (!usuario.dueño || !usuario.negocio || !usuario.rubro) {
+                alert('Por favor completa todos los campos');
+                return;
+            }
+
+            ocultarTodo();
+            mostrarPregunta();
+        }
+
+        function mostrarPregunta() {
+            ocultarTodo();
+            document.getElementById('screen-preguntas').classList.remove('hidden');
+
+            const pregunta = preguntas[preguntaActual];
+            document.getElementById('pregunta-texto').innerHTML = pregunta.texto;
+
+            const opcionesDiv = document.getElementById('opciones');
+            opcionesDiv.innerHTML = '';
+
+            pregunta.opciones.forEach((opcion, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.textContent = opcion.texto;
+                btn.onclick = () => seleccionarOpcion(opcion.puntos);
+                opcionesDiv.appendChild(btn);
+            });
+
+            // Actualizar progreso
+            const progreso = ((preguntaActual + 1) / preguntas.length) * 100;
+            document.getElementById('progreso').style.width = progreso + '%';
+
+            // Mostrar/ocultar botones
+            document.getElementById('btn-anterior').style.display = preguntaActual === 0 ? 'none' : 'inline-flex';
+            document.getElementById('btn-siguiente').textContent = preguntaActual === preguntas.length - 1 ? 'Ir a Facturacion' : 'Siguiente';
+        }
+
+        function seleccionarOpcion(puntos) {
+            const pregunta = preguntas[preguntaActual];
+            usuario.respuestas[pregunta.num] = {
+                mundo: pregunta.mundo,
+                puntos: puntos
+            };
+
+            // Marcar visualmente
+            document.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('selected'));
+            event.target.classList.add('selected');
+
+            // Auto siguiente
+            setTimeout(() => siguientePregunta(), 500);
+        }
+
+        function siguientePregunta() {
+            if (preguntaActual < preguntas.length - 1) {
+                preguntaActual++;
+                mostrarPregunta();
+            } else {
+                mostrarFacturacion();
+            }
+        }
+
+        function preguntaAnterior() {
+            if (preguntaActual > 0) {
+                preguntaActual--;
+                mostrarPregunta();
+            }
+        }
+
+        function mostrarFacturacion() {
+            ocultarTodo();
+            document.getElementById('screen-facturacion').classList.remove('hidden');
+        }
+
+        function setFacturacion(label, key) {
+            usuario.facturacion = label;
+            usuario.facturacionKey = key;
+
+            document.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('selected'));
+            event.target.classList.add('selected');
+
+            setTimeout(() => verResultados(), 500);
+        }
+
+        function verResultados() {
+            // Calcular scores
+            const scores = { 1: 0, 2: 0, 3: 0, 4: 0 };
+            const maximos = { 1: 16, 2: 12, 3: 12, 4: 12 };
+
+            for (let num in usuario.respuestas) {
+                const resp = usuario.respuestas[num];
+                scores[resp.mundo] += resp.puntos;
+            }
+
+            const porcentajes = {
+                1: Math.round((scores[1] / maximos[1]) * 100),
+                2: Math.round((scores[2] / maximos[2]) * 100),
+                3: Math.round((scores[3] / maximos[3]) * 100),
+                4: Math.round((scores[4] / maximos[4]) * 100)
+            };
+
+            const scoreTotal = Math.round((Object.values(porcentajes).reduce((a, b) => a + b, 0)) / 4);
+            usuario.scores = porcentajes;
+            usuario.scoreTotal = scoreTotal;
+
+            mostrarResultados();
+        }
+
+        function mostrarResultados() {
+            ocultarTodo();
+            document.getElementById('screen-resultados').classList.remove('hidden');
+
+            // Header
+            document.getElementById('subtitulo-resultado').textContent = `${usuario.negocio} | ${usuario.rubro}`;
+
+            // Score total
+            document.getElementById('score-total').textContent = usuario.scoreTotal;
+            document.getElementById('score-total-bar').style.width = usuario.scoreTotal + '%';
+
+            let estado = '';
+            if (usuario.scoreTotal <= 25) estado = '🔴 CRITICO';
+            else if (usuario.scoreTotal <= 50) estado = '🟠 ALERTA';
+            else if (usuario.scoreTotal <= 75) estado = '🟡 BIEN';
+            else estado = '🟢 EXCELENTE';
+
+            document.getElementById('score-estado').textContent = estado;
+
+            // Insight de facturación
+            const facturacionTexto = document.getElementById('facturacion-insight');
+            const costoMensual = usuario.facturacionKey === 'menos-3m' ? 30000 : 
+                               usuario.facturacionKey === '3m-10m' ? 80000 :
+                               usuario.facturacionKey === '10m-20m' ? 160000 : 320000;
+
+            const costoAnual = costoMensual * 12 * ((100 - usuario.scoreTotal) / 100);
+
+            facturacionTexto.innerHTML = `
+                <strong>Tu facturacion: ${usuario.facturacion}</strong><br><br>
+                Cada % de desorden te cuesta <strong style="color: #32CD32;">$${costoMensual.toLocaleString('es-AR')}/mes</strong><br><br>
+                Tu <strong style="color: #32CD32;">${100 - usuario.scoreTotal}% de desorden</strong> = $${Math.round(costoAnual).toLocaleString('es-AR')}/año
+            `;
+
+            // Mundos
+            const mundosDiv = document.getElementById('mundos-resumen');
+            mundosDiv.innerHTML = '';
+
+            const mundosTitulos = {
+                1: 'Mundo 1: Economico',
+                2: 'Mundo 2: Personal',
+                3: 'Mundo 3: Stock',
+                4: 'Mundo 4: Liquidez'
+            };
+
+            for (let m = 1; m <= 4; m++) {
+                const card = document.createElement('div');
+                card.className = 'mundo-card';
+
+                let estadoMundo = '';
+                if (usuario.scores[m] <= 25) estadoMundo = '🔴';
+                else if (usuario.scores[m] <= 50) estadoMundo = '🟠';
+                else if (usuario.scores[m] <= 75) estadoMundo = '🟡';
+                else estadoMundo = '🟢';
+
+                card.innerHTML = `
+                    <div class="mundo-title">
+                        <span>${mundosTitulos[m]} ${estadoMundo}</span>
+                        <span class="mundo-percentage">${usuario.scores[m]}%</span>
+                    </div>
+                    <div class="mundo-bar">
+                        <div class="mundo-fill" style="width: ${usuario.scores[m]}%"></div>
+                    </div>
+                `;
+
+                mundosDiv.appendChild(card);
+            }
+
+            // Insight final
+            document.getElementById('insight-final').innerHTML = `
+                <strong>El camino esta claro.</strong><br><br>
+                Ordenate en los 4 mundos y duplicas tu capacidad de decidir con seguridad. 
+                Cada mundo que mejores, libera plata y oportunidades.
+            `;
+        }
+
+        function descargarPDF() {
+            const element = document.getElementById('screen-resultados');
+            const opt = {
+                margin: 10,
+                filename: `Auditoria_${usuario.negocio.replace(/\s+/g, '_')}_${new Date().getTime()}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
+            };
+            html2pdf().set(opt).from(element).save();
+        }
+
+        function abrirCalculadora(e) {
+            e.preventDefault();
+            window.open('https://docs.google.com/spreadsheets/d/1RCO3AAGgFkUBrqtZfjDwDXxFM5YBJi3eMWaiiuXFmG8/edit?usp=sharing', '_blank');
+        }
+
+        function ocultarTodo() {
+            document.getElementById('screen-1').classList.add('hidden');
+            document.getElementById('screen-preguntas').classList.add('hidden');
+            document.getElementById('screen-facturacion').classList.add('hidden');
+            document.getElementById('screen-resultados').classList.add('hidden');
+        }
+
+        // Mostrar primera pantalla
+        window.onload = () => {
+            ocultarTodo();
+            document.getElementById('screen-1').classList.remove('hidden');
+        };
+    </script>
+</body>
+</html>
